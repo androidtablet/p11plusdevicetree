@@ -43,22 +43,23 @@ on boot
 # Connectivity related services (Begin)
 #
 # GPS
-service mnld /vendor/bin/mnld
-    class main
-    user gps
-    capabilities WAKE_ALARM
-    group gps inet misc sdcard_rw sdcard_r media_rw system radio wakelock
-    socket mnld stream 660 gps system
 
-# GPS Debug Process
-service lbs_dbg /system/bin/lbs_dbg
-    class main
-    user shell
-    group log system gps inet misc sdcard_rw sdcard_r media_rw radio
-    socket lbs_dbg stream 660 gps system
+# service mnld /vendor/bin/mnld
+#     class main
+#     user gps
+#     capabilities WAKE_ALARM
+#     group gps inet misc sdcard_rw sdcard_r media_rw system radio wakelock
+#     socket mnld stream 660 gps system
 
-on property:persist.vendor.em.dy.debug=1
-    stop lbs_dbg
+# # GPS Debug Process
+# service lbs_dbg /system/bin/lbs_dbg
+#     class main
+#     user shell
+#     group log system gps inet misc sdcard_rw sdcard_r media_rw radio
+#     socket lbs_dbg stream 660 gps system
+
+# on property:persist.vendor.em.dy.debug=1
+#     stop lbs_dbg
 
 #service BGW /vendor/bin/BGW
 #    user system
@@ -76,6 +77,18 @@ on property:persist.vendor.em.dy.debug=1
 #    class main
 #    disabled
 #    oneshot
+
+# WMT
+service wmt_loader /vendor/bin/wmt_loader
+    class early_hal
+    user system
+    group system
+    oneshot
+
+service wmt_launcher /vendor/bin/wmt_launcher -p /vendor/firmware/ -o 1
+    class early_hal
+    user system
+    group system
 
 #
 # Connectivity related services (End)

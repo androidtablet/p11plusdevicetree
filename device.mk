@@ -15,9 +15,12 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/virtual_ab_ota.mk)
 
 # A/B
 PRODUCT_PACKAGES += \
-    android.hardware.boot@1.2-impl \
-    android.hardware.boot@1.2-impl.recovery \
-    android.hardware.boot@1.2-service
+    android.hardware.boot@1.2-service \
+    android.hardware.boot@1.2-mtkimpl \
+    android.hardware.boot@1.2-mtkimpl.recovery
+#     mtk_plpath_utils \ // will pass in prebuilt
+#     mtk_plpath_utils.recovery
+
 
 PRODUCT_PACKAGES += \
     update_engine \
@@ -26,6 +29,10 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_PACKAGES_DEBUG += \
     update_engine_client
+    
+PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
+    ro.adb.nonblocking_ffs=0 \
+    persist.adb.nonblocking_ffs=0
 
 AB_OTA_POSTINSTALL_CONFIG += \
     RUN_POSTINSTALL_system=true \
@@ -37,9 +44,23 @@ PRODUCT_PACKAGES += \
     checkpoint_gc \
     otapreopt_script
 
+
 # Audio
+# 2 and 4 were added due to error message
+    # android.hardware.audio@2.0-impl \
+    # android.hardware.audio@4.0-impl \
+    # android.hardware.audio@2.0-service \
+# [  101.172031]  (0)[1:init]init: Command 'start vendor.audio-hal-4-0-msd' action=init.svc.audioserver=running (/system/etc/init/audioserver.rc:40) took 0ms and failed: service vendor.audio-hal-4-0-msd not found
+# [  101.172075]  (0)[1:init]init: Command 'start audio_proxy_service' action=init.svc.audioserver=running (/system/etc/init/audioserver.rc:41) took 0ms and failed: service audio_proxy_service not found
+# [  101.172112]  (0)[1:init]init: Command 'start vendor.audio-hal-2-0' action=init.svc.audioserver=running (/system/etc/init/audioserver.rc:43) took 0ms and failed: service vendor.audio-hal-2-0 not found
+# [  101.172154]  (0)[1:init]init: Command 'start audio-hal-2-0' action=init.svc.audioserver=running (/system/etc/init/audioserver.rc:44) took 0ms and failed: service audio-hal-2-0 not found
 PRODUCT_PACKAGES += \
-    android.hardware.bluetooth.audio-impl
+    android.hardware.bluetooth.audio-impl \
+
+#     android.hardware.audio.service \
+#     android.hardware.audio@7.0-impl \
+#     android.hardware.audio.effect@7.0-impl \
+#     android.hardware.soundtrigger@2.3-impl
 
 PRODUCT_PACKAGES += \
     audio.bluetooth.default \
@@ -49,6 +70,7 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libtinycompress \
     libtinyxml \
+    libaudiofoundation.vendor \
     tinymix
 
 PRODUCT_COPY_FILES += \
@@ -57,7 +79,8 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/audio/audio_em.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_em.xml \
     $(LOCAL_PATH)/configs/audio/audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_configuration.xml \
     $(LOCAL_PATH)/configs/audio/audio_policy_configuration_bluetooth_legacy_hal.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_configuration_bluetooth_legacy_hal.xml \
-    $(LOCAL_PATH)/configs/audio/audio_policy_volumes.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_volumes.xml
+    $(LOCAL_PATH)/configs/audio/audio_policy_volumes.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_volumes.xml \
+    $(LOCAL_PATH)/configs/audio/audio_policy.conf:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy.conf
 
 PRODUCT_COPY_FILES += \
     frameworks/av/services/audiopolicy/config/a2dp_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/a2dp_audio_policy_configuration.xml \
@@ -87,7 +110,7 @@ PRODUCT_PACKAGES += \
     libdng_sdk.vendor
 
 # Display
-TARGET_SCREEN_DENSITY := 240 # 212 technically is 212 but build.prop says 240??
+TARGET_SCREEN_DENSITY := 240
 TARGET_SCREEN_HEIGHT := 2000
 TARGET_SCREEN_WIDTH := 1200
 
@@ -110,11 +133,12 @@ PRODUCT_PACKAGES += \
 
 # Display
 PRODUCT_PACKAGES += \
-    android.hardware.graphics.composer@2.1-service
+    android.hardware.graphics.composer@2.2-service
 
 PRODUCT_PACKAGES += \
-    android.hardware.memtrack@1.0-impl \
-    android.hardware.memtrack@1.0-service
+    android.hardware.memtrack-service.mediatek-mali
+#    android.hardware.memtrack@1.0-impl \
+#   android.hardware.memtrack@1.0-service
 
 PRODUCT_PACKAGES += \
     android.hardware.graphics.common@1.2.vendor \
@@ -137,14 +161,14 @@ PRODUCT_PACKAGES += \
     android.hardware.gatekeeper@1.0-service
 
 # GNSS
-PRODUCT_PACKAGES += \
-    android.hardware.gnss@1.0.vendor \
-    android.hardware.gnss@1.1.vendor \
-    android.hardware.gnss@2.0.vendor \
-    android.hardware.gnss@2.1.vendor \
-    android.hardware.gnss.measurement_corrections@1.0.vendor \
-    android.hardware.gnss.measurement_corrections@1.1.vendor \
-    android.hardware.gnss.visibility_control@1.0.vendor
+# PRODUCT_PACKAGES += \
+#     android.hardware.gnss@1.0.vendor \
+#     android.hardware.gnss@1.1.vendor \
+#     android.hardware.gnss@2.0.vendor \
+#     android.hardware.gnss@2.1.vendor \
+#     android.hardware.gnss.measurement_corrections@1.0.vendor \
+#     android.hardware.gnss.measurement_corrections@1.1.vendor \
+#     android.hardware.gnss.visibility_control@1.0.vendor
 
 # Health
 PRODUCT_PACKAGES += \
@@ -167,14 +191,23 @@ PRODUCT_PACKAGES += \
     libhwbinder.vendor
 
 # Keymaster
-PRODUCT_PACKAGES += \
-    android.hardware.keymaster@4.1.vendor
+# PRODUCT_PACKAGES += \
+#    android.hardware.keymaster@4.1.vendor
 
 PRODUCT_PACKAGES += \
+    libkeymaster41.vendor \
+    libkeymaster4_1support.vendor \
     libkeymaster4.vendor \
     libkeymaster4support.vendor \
     libpuresoftkeymasterdevice.vendor \
-    libsoft_attestation_cert.vendor
+    libsoft_attestation_cert.vendor \
+    android.hardware.keymaster@4.1.vendor \
+    android.hardware.keymaster@4.0.vendor \
+    android.hardware.hardware_keystore.km41.xml
+
+# Keystore
+PRODUCT_PACKAGES += \
+    android.system.keystore2
 
 # Lights
 PRODUCT_PACKAGES += \
@@ -201,6 +234,15 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/seccomp/android.hardware.media.c2@1.2-extended-seccomp-policy:$(TARGET_COPY_OUT_VENDOR)/etc/seccomp_policy/android.hardware.media.c2@1.2-extended-seccomp-policy \
     $(LOCAL_PATH)/configs/seccomp/android.hardware.media.c2@1.2-mediatek-seccomp-policy:$(TARGET_COPY_OUT_VENDOR)/etc/seccomp_policy/android.hardware.media.c2@1.2-mediatek-seccomp-policy
 
+
+# Neural Networks
+PRODUCT_PACKAGES += \
+    android.hardware.neuralnetworks@1.0.vendor \
+    android.hardware.neuralnetworks@1.1.vendor \
+    android.hardware.neuralnetworks@1.2.vendor \
+    android.hardware.neuralnetworks@1.3.vendor
+
+
 # Overlays
 DEVICE_PACKAGE_OVERLAYS += \
     $(LOCAL_PATH)/overlay-lineage
@@ -216,13 +258,19 @@ PRODUCT_ENFORCE_RRO_EXCLUDED_OVERLAYS += \
 
 # Power
 PRODUCT_PACKAGES += \
-    android.hardware.power-service-mediatek
+    android.hardware.power-service-mediatek \
+    android.hardware.power-V2-ndk_platform.vendor
 
 PRODUCT_PACKAGES += \
     android.hardware.power@1.0.vendor \
     android.hardware.power@1.1.vendor \
     android.hardware.power@1.2.vendor \
     android.hardware.power@1.3.vendor
+
+PRODUCT_PACKAGES += \
+    vendor.mediatek.hardware.mtkpower@1.0.vendor \
+    vendor.mediatek.hardware.mtkpower@1.1.vendor \
+    vendor.mediatek.hardware.mtkpower@1.2.vendor
 
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/power/power_app_cfg.xml:$(TARGET_COPY_OUT_VENDOR)/etc/power_app_cfg.xml \
@@ -261,24 +309,40 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.software.vulkan.deqp.level-2020-03-01.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.software.vulkan.deqp.level.xml \
     frameworks/native/data/etc/handheld_core_hardware.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/handheld_core_hardware.xml \
     frameworks/native/data/etc/android.hardware.telephony.gsm.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.telephony.gsm.xml
+    
 
 # Rootdir
 PRODUCT_PACKAGES += \
     fstab.mt6785 \
+    fstab.mt8185 \
+    fstab.emmc \
+    fstab.mt6785.ramdisk \
+    fstab.mt8185.ramdisk \
+    fstab.emmc.ramdisk \
     init.ago.rc \
     init.connectivity.rc \
+    init.modem.rc \
     init.mt6785.rc \
+    init.mt8185.rc \
     init.mt6785.usb.rc \
     init.sensor_1_0.rc \
     ueventd.mtk.rc
 
 PRODUCT_PACKAGES += \
     init.recovery.mt6785.rc \
+    init.recovery.mt8185.rc \
     init.recovery.mt6785.sh
 
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/rootdir/etc/fstab.mt6785:$(TARGET_COPY_OUT_RECOVERY)/root/first_stage_ramdisk/fstab.mt6785
+# PRODUCT_COPY_FILES += \
+#     $(LOCAL_PATH)/rootdir/etc/fstab.mt6785:$(TARGET_COPY_OUT_RECOVERY)/root/first_stage_ramdisk/fstab.mt6785 \
+#     $(LOCAL_PATH)/rootdir/etc/fstab.mt8185:$(TARGET_COPY_OUT_RECOVERY)/root/first_stage_ramdisk/fstab.mt8185 \
+#     $(LOCAL_PATH)/rootdir/etc/fstab.emmc:$(TARGET_COPY_OUT_RECOVERY)/root/first_stage_ramdisk/fstab.emmc \
+#     $(LOCAL_PATH)/rootdir/etc/recovery.fstab:$(TARGET_COPY_OUT_RECOVERY)/root/first_stage_ramdisk/recovery.fstab
 
+ PRODUCT_COPY_FILES += \
+     $(LOCAL_PATH)/prebuilt/mtk_plpath_utils:$(TARGET_COPY_OUT_RECOVERY)/root/system/bin/mtk_plpath_utils \
+     $(LOCAL_PATH)/prebuilt/mtk-plpath-utils.rc:$(TARGET_COPY_OUT_RECOVERY)/root/system/etc/init/mtk-plpath-utils.rc
+    
 # Sensors
 PRODUCT_PACKAGES += \
     android.hardware.sensors@1.0.vendor \
@@ -287,6 +351,7 @@ PRODUCT_PACKAGES += \
     android.frameworks.sensorservice@1.0
 
 PRODUCT_PACKAGES += \
+    libshim_sensors \
     libsensorndkbridge
 
 # Shipping API level
@@ -295,7 +360,10 @@ PRODUCT_SHIPPING_API_LEVEL := 30
 # Soong namespaces
 PRODUCT_SOONG_NAMESPACES += \
     $(LOCAL_PATH) \
+    hardware/google/interfaces \
+    hardware/google/pixel \
     hardware/mediatek
+
 
 # Thermal
 PRODUCT_PACKAGES += \
@@ -305,30 +373,52 @@ PRODUCT_PACKAGES += \
     android.hardware.thermal@2.0.vendor
 
 # USB
+# PRODUCT_PACKAGES += \
+#    android.hardware.usb@1.1-service.rosemary
+    # android.hardware.usb-service.mediatek \
+    # android.hardware.usb.gadget-service.rosemary
+
+# VNDK
 PRODUCT_PACKAGES += \
-    android.hardware.usb@1.1-service.rosemary
+    libutils-v32 \
+    libcrypto-v32 \
+    libssl-v32
+
+# Vibrator
+PRODUCT_PACKAGES += \
+    android.hardware.vibrator-service.mediatek
 
 # Wi-Fi
-PRODUCT_PACKAGES += \
-    android.hardware.wifi.supplicant@1.0.vendor \
-    android.hardware.wifi.supplicant@1.1.vendor \
-    android.hardware.wifi.supplicant@1.2.vendor \
-    android.hardware.wifi.supplicant@1.3.vendor \
-    android.hardware.wifi.hostapd@1.0.vendor \
-    android.hardware.wifi.hostapd@1.1.vendor \
-    android.hardware.wifi.hostapd@1.2.vendor
+# PRODUCT_PACKAGES += \
+#     android.hardware.wifi.supplicant@1.0.vendor \
+#     android.hardware.wifi.supplicant@1.1.vendor \
+#     android.hardware.wifi.supplicant@1.2.vendor \
+#     android.hardware.wifi.supplicant@1.3.vendor \
+#     android.hardware.wifi.hostapd@1.0.vendor \
+#     android.hardware.wifi.hostapd@1.1.vendor \
+#     android.hardware.wifi.hostapd@1.2.vendor
 
 PRODUCT_PACKAGES += \
+    wpa_supplicant \
+    hostapd \
+    android.hardware.wifi@1.0-service
+
+
+    #android.hardware.wifi-service
+
+# PRODUCT_PACKAGES += \
     android.hardware.wifi@1.0-service-lazy.rosemary
 
-PRODUCT_PACKAGES += \
-    libkeystore-wifi-hidl \
-    libkeystore-engine-wifi-hidl
+# PRODUCT_PACKAGES += \
+#     libkeystore-wifi-hidl \
+#     libkeystore-engine-wifi-hidl
 
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/wifi/p2p_supplicant_overlay.conf:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/p2p_supplicant_overlay.conf \
-    $(LOCAL_PATH)/configs/wifi/wpa_supplicant.conf:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/wpa_supplicant.conf \
-    $(LOCAL_PATH)/configs/wifi/wpa_supplicant_overlay.conf:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/wpa_supplicant_overlay.conf
+    $(call find-copy-subdir-files,*,$(LOCAL_PATH)/configs/wifi/,$(TARGET_COPY_OUT_VENDOR)/etc/wifi)
+
+#    $(LOCAL_PATH)/configs/wifi/p2p_supplicant_overlay.conf:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/p2p_supplicant_overlay.conf \
+#    $(LOCAL_PATH)/configs/wifi/wpa_supplicant.conf:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/wpa_supplicant.conf \
+#    $(LOCAL_PATH)/configs/wifi/wpa_supplicant_overlay.conf:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/wpa_supplicant_overlay.conf
 
 # Inherit the proprietary files
 $(call inherit-product, vendor/lenovo/tb8185p3_64/tb8185p3_64-vendor.mk)

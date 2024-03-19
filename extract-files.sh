@@ -55,14 +55,47 @@ fi
 
 function blob_fixup {
     case "$1" in
+        vendor/bin/mtk_agpsd)
+           "${PATCHELF}" --replace-needed "libcrypto.so" "libcrypto-v32.so" "${2}"
+           "${PATCHELF}" --replace-needed "libssl.so" "libssl-v32.so" "${2}"           
+            ;;
+        # vendor/bin/hw/android.hardware.gnss-service.mediatek |\
+        # vendor/lib64/hw/android.hardware.gnss-impl-mediatek.so)
+        #     "$PATCHELF" --replace-needed "android.hardware.gnss-V1-ndk_platform.so" "android.hardware.gnss-V1-ndk.so" "$2"
+        #     ;;
+        # vendor/bin/hw/android.hardware.media.c2@1.2-mediatek)
+        #     ;&
+        # vendor/bin/hw/android.hardware.media.c2@1.2-mediatek-64b)
+        #     "${PATCHELF}" --add-needed "libstagefright_foundation-v33.so" "${2}"
+        #     ;;
+        # vendor/bin/hw/vendor.mediatek.hardware.mtkpower@1.0-service)
+        #     "${PATCHELF}" --replace-needed "android.hardware.power-V2-ndk_platform.so" "android.hardware.power-V2-ndk.so" "${2}"
+        #     ;;
+
         vendor/lib64/libwifi-hal-mtk.so)
             "$PATCHELF" --set-soname libwifi-hal-mtk.so "${2}"
             ;;
-        vendor/bin/hw/vendor.mediatek.hardware.mtkpower@1.0-service)
-            "${PATCHELF}" --replace-needed "android.hardware.power-V1-ndk_platform.so" "android.hardware.power-V1-ndk.so" "${2}"
+        vendor/lib64/libmtkcam_featurepolicy.so)
+            # evaluateCaptureConfiguration()
+            sed -i "s/\x34\xE8\x87\x40\xB9/\x34\x28\x02\x80\x52/" "$2"
+            ;;
+        vendor/lib64/libmtkcam_stdutils.so)
+            "${PATCHELF}" --replace-needed "libutils.so" "libutils-v32.so" "${2}"
+            ;;
+        vendor/bin/mnld|\
+        vendor/lib*/libcam.utils.sensorprovider.so|\
+        vendor/lib*/librgbwlightsensor.so)
+            "$PATCHELF" --add-needed "libshim_sensors.so" "$2"
+            ;;
+        vendor/lib*/hw/vendor.mediatek.hardware.pq@2.14-impl.so)
+            "${PATCHELF}" --replace-needed "libutils.so" "libutils-v32.so" "${2}"
             ;;
     esac
 }
+
+#        vendor/bin/hw/vendor.mediatek.hardware.mtkpower@1.0-service)
+#            "${PATCHELF}" --replace-needed "android.hardware.power-V2-ndk_platform.so" "android.hardware.power-V2-ndk.so" "${2}"
+#            ;;
 
 # Initialize the helper
 setup_vendor "${DEVICE}" "${VENDOR}" "${ANDROID_ROOT}" false "${CLEAN_VENDOR}"

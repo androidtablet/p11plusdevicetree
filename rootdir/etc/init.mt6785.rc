@@ -21,6 +21,7 @@ on early-init
     write /proc/perfmgr/boost_ctrl/cpu_ctrl/boot_freq "0 0 0 0"
     write /sys/devices/platform/10012000.dvfsrc/helio-dvfsrc/dvfsrc_req_ddr_opp 0
 
+
 # load tahiti firmware
     start tahiti_i2c_load
 
@@ -184,6 +185,11 @@ on post-fs
 
     # allow ccci_mdinit access ccci_dump
     chown root system /proc/ccci_dump
+
+service debug_kernel /system/bin/sh -c "cat /proc/kmsg > /data/debug.kernel.txt"
+    class main
+    user root
+    oneshot
 
 on post-fs-data
     write /proc/bootprof "INIT:post-fs-data"

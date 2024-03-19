@@ -8,6 +8,21 @@ prebuilt_etc {
     name: "fstab.mt6785",
     src: "etc/fstab.mt6785",
     vendor: true,
+    ramdisk_available: true
+}
+
+prebuilt_etc {
+    name: "fstab.mt8185",
+    src: "etc/fstab.mt8185",
+    vendor: true,
+    ramdisk_available: true
+}
+
+prebuilt_etc {
+    name: "fstab.emmc",
+    src: "etc/fstab.emmc",
+    vendor: true,
+    ramdisk_available: true
 }
 
 prebuilt_etc {
@@ -24,8 +39,22 @@ prebuilt_etc {
 }
 
 prebuilt_etc {
+    name: "init.modem.rc",
+    src: "etc/init.modem.rc",
+    sub_dir: "init/hw",
+    vendor: true,
+}
+
+prebuilt_etc {
     name: "init.mt6785.rc",
     src: "etc/init.mt6785.rc",
+    sub_dir: "init/hw",
+    vendor: true,
+}
+
+prebuilt_etc {
+    name: "init.mt8185.rc",
+    src: "etc/init.mt8185.rc",
     sub_dir: "init/hw",
     vendor: true,
 }
